@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diacron × Arvut — Analisi della concorrenza in Ticino</title>
+<style>
+@import url('assets/fonts/manrope.css');
+
+:root{
+  --cream:#FCFAF4; --ink:#202B28; --body:#445049; --muted:#79827C;
+  --teal:#009B9F; --teal-d:#016E72; --teal-soft:#E3F2F0;
+  --hair:#ECE6D8;
+  --shadow:0 1px 2px rgba(32,43,40,.05), 0 14px 34px -22px rgba(32,43,40,.30);
+}
+*{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
+body{
+  margin:0; background:#EAE7DD; color:var(--body);
+  font-family:"Manrope",system-ui,sans-serif; font-weight:450;
+  font-size:15px; line-height:1.55; letter-spacing:-0.003em;
+}
+h1,h2,h3,h4{color:var(--ink); font-weight:800; line-height:1.08; letter-spacing:-0.022em; margin:0; text-wrap:balance}
+h2{font-size:27px}
+h3{font-size:18px; font-weight:700}
+h4{font-size:15px; font-weight:800}
+p{margin:0 0 13px; text-wrap:pretty}
+strong{color:var(--ink); font-weight:700}
+em{font-style:italic}
+
+.src{font-size:.66em; font-weight:700; color:var(--teal-d); text-decoration:none;
+  vertical-align:.4em; white-space:nowrap; padding:0 .1em; letter-spacing:0}
+.src::before{content:"↗"; font-size:.8em; margin-right:.5px; opacity:.65}
+.src:hover{text-decoration:underline}
+
+.page{
+  width:210mm; height:297mm; background:var(--cream);
+  margin:0 auto 16px; padding:17mm 20mm 14mm;
+  display:flex; flex-direction:column;
+  box-shadow:0 6px 30px -10px rgba(0,0,0,.25);
+  break-after:page; position:relative; overflow:hidden;
+}
+.page:last-child{break-after:auto}
+.rh{display:flex; justify-content:space-between; align-items:center;
+  font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+.rh .b{color:var(--ink)}
+.rh .b .d{display:inline-block; width:6px;height:6px;border-radius:50%;background:var(--teal);vertical-align:1px;margin-right:5px}
+.pc{flex:1; padding-top:11mm}
+.pc.center{display:flex; flex-direction:column; justify-content:center; padding-top:0}
+.rf{display:flex; justify-content:space-between; align-items:center; margin-top:10mm;
+  font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.rf .pg{color:var(--teal-d)}
+
+.kicker{font-size:11px; font-weight:800; letter-spacing:.04em; color:var(--teal-d); margin:0 0 7px}
+.pc h2{margin:0 0 14px; max-width:22ch}
+.lead{font-size:18px; line-height:1.42; color:var(--ink); font-weight:500; max-width:62ch; margin-bottom:16px}
+.body-col{max-width:66ch}
+.note{font-size:12.5px; color:var(--muted); line-height:1.45; margin-top:10px; max-width:66ch}
+
+.cover .pc{display:flex; flex-direction:column; justify-content:center; padding-top:0}
+.cover h1{font-size:47px; line-height:1.03; letter-spacing:-0.03em; margin:0 0 22px; max-width:17ch}
+.cover h1 .hl{color:var(--teal)}
+.cover .sub{font-size:19px; line-height:1.45; color:var(--body); max-width:56ch; margin:0 0 40px}
+.metaline{font-size:12px; color:var(--muted); font-weight:700; letter-spacing:.02em; margin-bottom:46px}
+.metaline span{color:var(--ink)}
+.figrow{display:flex; gap:30px}
+.fig{flex:1}
+.fig .fn{font-size:38px; font-weight:800; color:var(--ink); letter-spacing:-0.035em; line-height:1}
+.fig .fn .u{font-size:16px; color:var(--teal-d); font-weight:700; letter-spacing:0}
+.fig .fl{font-size:12.5px; color:var(--body); margin-top:10px; line-height:1.4; max-width:26ch}
+
+table{width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px}
+td,th{text-align:left; padding:9px 12px; vertical-align:top}
+thead th, tr.head th{color:var(--teal-d); font-weight:800; font-size:11px; letter-spacing:.05em; text-transform:uppercase; border-bottom:1.5px solid var(--teal-soft)}
+tbody tr+tr td, table.cmp tr+tr td{border-top:1px solid var(--hair)}
+td.num,th.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.cmp td:first-child{font-weight:600; color:var(--ink)}
+.hl td{background:var(--teal-soft)} .hl td strong{color:var(--teal-d)}
+table.map td:first-child{font-weight:700; color:var(--ink); white-space:nowrap}
+table.map td{font-size:13px; line-height:1.4}
+
+.callout{background:var(--teal); color:#F2FBFB; border-radius:16px; padding:22px 24px; margin:18px 0}
+.callout h3{color:#fff; margin:0 0 7px}
+.callout p{color:#E4F4F3; margin:0; max-width:64ch}
+.callout .src{color:#CFEFEE}
+
+.panel{background:#fff; border-radius:14px; padding:18px 20px; margin:16px 0}
+figcaption{font-size:12px; color:var(--muted); margin-top:11px; line-height:1.4}
+
+ul.clean{padding:0; list-style:none; margin:14px 0}
+ul.clean li{padding:5px 0 5px 22px; position:relative; font-size:14.5px; max-width:66ch}
+ul.clean li+li{margin-top:4px}
+ul.clean li::before{content:""; position:absolute; left:2px; top:13px; width:6px; height:6px; border-radius:50%; background:var(--teal)}
+
+.chlist{display:grid; grid-template-columns:1fr 1fr; gap:18px 30px; margin:16px 0}
+.chl{display:flex; gap:13px}
+.chl .no{font-size:20px; font-weight:800; color:var(--teal); line-height:1; min-width:22px}
+.chl .t{font-weight:800; color:var(--ink); font-size:14.5px; margin-bottom:3px}
+.chl .c{font-size:13px; color:var(--body); line-height:1.42}
+
+.closing{font-size:23px; line-height:1.36; color:var(--ink); font-weight:700; max-width:26ch; text-wrap:balance}
+.air h2{font-size:31px; margin-bottom:20px}
+.air .lead{font-size:20px; line-height:1.46; margin-bottom:24px; max-width:62ch}
+.air > p{margin-bottom:22px; font-size:15.5px}
+.air .cmp th{padding-bottom:12px}
+.air .cmp td{padding:14px 12px}
+
+@page{ size:A4; margin:0 }
+@media print{
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{background:var(--cream)}
+  .page{margin:0; box-shadow:none}
+}
+@media screen and (max-width:760px){
+  .page{width:100%; height:auto; min-height:0; padding:24px 20px}
+  .cover h1{font-size:34px} .figrow,.chlist{grid-template-columns:1fr; flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== P1 · COPERTINA ===================== -->
+<div class="page cover">
+  <div class="rh"><span class="b"><span class="d"></span>ARVUT × DIACRON</span><span>Canton Ticino · 2026</span></div>
+  <div class="pc">
+    <h1>Non i primi. Ma <span class="hl">gli unici a unirlo</span>.</h1>
+    <p class="sub">Chi offre già contabilità in tempo reale e CFO esterno in Ticino, cosa manca ancora sul mercato e dove sta la differenziazione difendibile di Diacron.</p>
+    <div class="metaline">Analisi della concorrenza · realizzata da <span>Arvut</span> per <span>Diacron</span> · luglio 2026 · ogni affermazione con la sua fonte</div>
+    <div class="figrow">
+      <div class="fig"><div class="fn">3</div><div class="fl">studi ticinesi comunicano già un «CFO esterno»: yourCFO, AFG, Fidinam</div></div>
+      <div class="fig"><div class="fn">0</div><div class="fl">uniscono tempo reale + CFO + EUR/CHF sotto un unico fiduciario</div></div>
+      <div class="fig"><div class="fn">«su richiesta»</div><div class="fl">nessun concorrente pubblica i prezzi dei servizi CFO</div></div>
+    </div>
+  </div>
+  <div class="rf"><span>Analisi della concorrenza</span><span class="pg">01</span></div>
+</div>
+
+<!-- ===================== P2 · IL PUNTO ===================== -->
+<div class="page">
+  <div class="rh"><span class="b"><span class="d"></span>ARVUT × DIACRON</span><span>Il punto</span></div>
+  <div class="pc air">
+    <p class="kicker">Il punto</p>
+    <h2>Il «CFO esterno» esiste già. La combinazione no.</h2>
+    <p class="lead">In Ticino il CFO esterno non è una novità, e la contabilità in tempo reale esiste già come software. Ciò che non esiste è la <strong>combinazione</strong> — tempo reale + CFO + EUR/CHF — sotto un unico fiduciario di fiducia.</p>
+    <p class="body-col">Per questo la comunicazione non va costruita sull'essere «i primi» o «gli unici» in Ticino: sarebbe facilmente smentibile. Va costruita su elementi concreti e difendibili. Il quadro reale del mercato:</p>
+    <table class="cmp">
+      <tr class="head"><th>Cosa esiste già</th><th>Cosa manca ancora</th></tr>
+      <tr><td>CFO esterno / CFO-as-a-Service — offerto da yourCFO, AFG, Fidinam</td><td><strong>Nessuno</strong> lo integra con il tempo reale come prodotto per il cliente</td></tr>
+      <tr><td>Contabilità in tempo reale — disponibile come software (Swiss21, bexio, Banana)</td><td>È uno <strong>strumento</strong>, non un servizio a marchio del fiduciario</td></tr>
+      <tr><td>Gestione EUR/CHF — tecnicamente possibile in ogni software</td><td>Nessun fiduciario la <strong>comunica</strong> come servizio</td></tr>
+      <tr><td>Servizi CFO — presenti sul mercato ticinese</td><td>Prezzi tutti <strong>«su richiesta»:</strong> mercato opaco</td></tr>
+    </table>
+    <p class="body-col">La concorrenza, quindi, non è un ostacolo: <strong>conferma la domanda.</strong> Lo spazio libero è la loro somma.</p>
+  </div>
+  <div class="rf"><span>Analisi della concorrenza</span><span class="pg">02</span></div>
+</div>
+
+<!-- ===================== P3 · LA MAPPA ===================== -->
+<div class="page">
+  <div class="rh"><span class="b"><span class="d"></span>ARVUT × DIACRON</span><span>La mappa</span></div>
+  <div class="pc">
+    <p class="kicker">La mappa dei concorrenti</p>
+    <h2>Chi offre cosa in Ticino</h2>
+    <p class="body-col">I quattro operatori ticinesi che comunicano servizi vicini al nostro, più gli strumenti software su cui si appoggia il tempo reale. Nessuno di loro dichiara pubblicamente la combinazione completa.</p>
+    <table class="map">
+      <tr class="head"><th>Operatore</th><th>Cosa offre</th><th>Cosa non comunica</th></tr>
+      <tr>
+        <td>yourCFO<br><span style="font-weight:600;color:var(--muted);font-size:11px">Lugano · dal 2015</span></td>
+        <td>CFO frazionario / interim, fiduciaria autorizzata <a class="src" href="https://www.yourcfo-consulting.ch/">yourcfo</a></td>
+        <td>tempo reale, cloud, EUR/CHF</td>
+      </tr>
+      <tr>
+        <td>AFG&amp;partners<br><span style="font-weight:600;color:var(--muted);font-size:11px">Camorino</span></td>
+        <td>«CFO-as-a-Service» per piccole imprese <a class="src" href="https://www.afgpartners.ch/servizi/gestione-aziendale/cfo-as-a-service/">afg</a></td>
+        <td>tempo reale, cloud, EUR/CHF</td>
+      </tr>
+      <tr>
+        <td>Fidinam<br><span style="font-weight:600;color:var(--muted);font-size:11px">Lugano · dal 1960</span></td>
+        <td>«Servizi CFO / CFO-as-a-Service», outsourcing contabile <a class="src" href="https://www.fidinam.com/en/business-consulting/cfo-as-a-service">fidinam</a></td>
+        <td>tempo reale come prodotto cliente, EUR/CHF</td>
+      </tr>
+      <tr>
+        <td>Fidav<br><span style="font-weight:600;color:var(--muted);font-size:11px">Mendrisio · Lugano</span></td>
+        <td>contabilità cloud su Microsoft Business Central + «CFO advisory» <a class="src" href="https://www.fidav.ch/it/">fidav</a></td>
+        <td>«tempo reale», CFO frazionario, EUR/CHF (non dichiarati)</td>
+      </tr>
+      <tr class="hl">
+        <td>Software</td>
+        <td>dashboard e cifre <strong>in tempo reale</strong> (Swiss21/Abacus, bexio, Banana) <a class="src" href="https://swiss21.org/it/per-le-fiduciarie/">swiss21</a></td>
+        <td><strong>è software</strong>, non un servizio del fiduciario</td>
+      </tr>
+    </table>
+    <div class="callout">
+      <h3>Il CFO esterno è un trend svizzero, non un'esclusiva ticinese</h3>
+      <p>Il modello è diffuso anche nella Svizzera francese (Karpeo, Ginevra <a class="src" href="https://karpeo.ch/services-fiduciaire/directeur-financier-externalise-cfo-demande/">karpeo</a>) e tedesca, dove l'associazione nazionale TreuhandSuisse invita i fiduciari a posizionarsi come «CFO as a Service» <a class="src" href="https://www.treuhandsuisse.ch/blog/digitaler-cfo-vision-oder-bereits-alltag">treuhandsuisse</a>. Un servizio riconosciuto — che portiamo in Ticino in forma integrata.</p>
+    </div>
+  </div>
+  <div class="rf"><span>Analisi della concorrenza</span><span class="pg">03</span></div>
+</div>
+
+<!-- ===================== P4 · LO SPAZIO LIBERO ===================== -->
+<div class="page">
+  <div class="rh"><span class="b"><span class="d"></span>ARVUT × DIACRON</span><span>La differenziazione</span></div>
+  <div class="pc">
+    <p class="kicker">Lo spazio libero</p>
+    <h2>Dove Diacron è difendibile</h2>
+    <p class="body-col">Non «i primi» o «gli unici», ma una differenziazione costruita su elementi concreti e verificabili — molti dei quali i concorrenti non comunicano affatto.</p>
+    <div class="chlist">
+      <div class="chl"><div class="no">1</div><div><div class="t">Lingua italiana</div><div class="c">servizio e reportistica nella lingua del cliente ticinese.</div></div></div>
+      <div class="chl"><div class="no">2</div><div><div class="t">EUR/CHF senza sorprese di cambio</div><div class="c">gestione in due valute con il metodo corretto secondo l'AFC — una necessità di cui i concorrenti non parlano.</div></div></div>
+      <div class="chl"><div class="no">3</div><div><div class="t">Corridoio Svizzera–Italia</div><div class="c">conoscenza delle operazioni transfrontaliere tra i due paesi.</div></div></div>
+      <div class="chl"><div class="no">4</div><div><div class="t">Competenze del Gruppo Diacron</div><div class="c">contabili, fiscali e societarie sotto un unico interlocutore.</div></div></div>
+      <div class="chl"><div class="no">5</div><div><div class="t">Reporting gestionale e supporto finanziario</div><div class="c">non solo registrazioni, ma lettura dei numeri per la direzione.</div></div></div>
+      <div class="chl"><div class="no">6</div><div><div class="t">Piattaforma white-label</div><div class="c">un unico fiduciario di fiducia, marchio Diacron.</div></div></div>
+      <div class="chl"><div class="no">7</div><div><div class="t">Tempo reale come prodotto per il cliente</div><div class="c">accesso self-service ai propri numeri, non uno strumento interno dello studio — cosa che in Ticino nessuno impacchetta pubblicamente.</div></div></div>
+    </div>
+    <div class="callout">
+      <h3>Un'opportunità in più: il prezzo trasparente</h3>
+      <p>Il mercato dei servizi CFO in Ticino è opaco: tutti i concorrenti tengono il prezzo «su richiesta». Comunicare una tariffa chiara — anche solo «a partire da CHF…» — sarebbe di per sé un elemento di differenziazione che nessuno ha.</p>
+    </div>
+  </div>
+  <div class="rf"><span>Analisi della concorrenza</span><span class="pg">04</span></div>
+</div>
+
+<!-- ===================== P5 · CHIUSURA ===================== -->
+<div class="page">
+  <div class="rh"><span class="b"><span class="d"></span>ARVUT × DIACRON</span><span>In sintesi</span></div>
+  <div class="pc center">
+    <p class="kicker">In sintesi</p>
+    <p class="closing">La concorrenza conferma la domanda.<br>Lo spazio è la combinazione — e il modo in cui la si racconta.</p>
+    <ul class="clean" style="margin-top:26px; max-width:64ch">
+      <li>In Ticino esistono già CFO esterno (yourCFO, AFG, Fidinam) e tempo reale come software (Swiss21, bexio, Banana).</li>
+      <li>Nessuno, per quanto pubblicamente verificabile, unisce tempo reale + CFO + EUR/CHF sotto un unico fiduciario.</li>
+      <li>La differenziazione si costruisce su elementi concreti e difendibili — non su «primi/unici».</li>
+      <li>Il mercato è opaco sui prezzi: la trasparenza è un'opportunità a sé.</li>
+    </ul>
+    <p class="note" style="margin-top:26px">Le affermazioni si basano sulle pagine pubbliche degli operatori (luglio 2026); le pagine sono attive, ma i servizi e i prezzi possono cambiare. Fonti citate lungo il documento.</p>
+  </div>
+  <div class="rf"><span>Analisi della concorrenza</span><span class="pg">05</span></div>
+</div>
+
+</body>
+</html>
